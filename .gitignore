@@ -1,0 +1,16 @@
+# Prod files
+dist/
+
+# node_modules
+node_modules/
+
+# environments
+.env
+
+# logs
+
+logs/
+
+# notes
+
+notes.md
