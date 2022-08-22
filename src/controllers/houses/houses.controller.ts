@@ -13,7 +13,8 @@ const { OK, BAD_REQUEST, ERROR } = HTTP_STATUS_CODES;
 
 
 export const getHouses = async (req: Request, res: Response) => {
-  const {short_name} = req.body;
+  const {short_name} = req.query;
+
   try {
     if(short_name =='All')
     {

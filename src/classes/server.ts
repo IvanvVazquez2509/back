@@ -10,6 +10,7 @@ import vendorRoutes from "../routes/vendor/vendor.routes";
 import CostCodesRoute from "../routes/cost_codes/cost_code.routes";
 import transactionRoute from "../routes/transactions/transaction.routes"
 import UserRoute from "../routes/users/users.routes"
+import  BudgetRoute    from "../routes/budgets/budget.routes";
 
 class Server {
   private app: Application;
@@ -36,6 +37,7 @@ class Server {
     this.app.use("/api/cost_codes",CostCodesRoute);
     this.app.use("/api/transaction",transactionRoute);
     this.app.use("/api/user",UserRoute);
+    this.app.use("/api/budgets", BudgetRoute)
   }
 
   private startDBConnection() {
