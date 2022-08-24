@@ -14,10 +14,6 @@ import sequelize from "sequelize";
 import db from "../../config/database";
 
 
-
-
-
-
 const { INTERNAL_SERVER_ERROR } = AppStrings;
 const { OK, BAD_REQUEST, ERROR } = HTTP_STATUS_CODES;
 
@@ -53,6 +49,7 @@ export const getTrasactions = async (req: Request, res: Response) => {
     return response(res, OK, msg, vendor, null);
     }
       else{
+
         const [results, metadata] =  await db.query('SELECT tr.id,tr.rguidb,tr.house_id,tr.vendor_id,tr.cost_code_id,tr.description,tr.amount,tr.sagedate,tr.company, '+
         ' h.id,h.job_id,h.address,h.company,h.sagerecordnumber,v.id,v.sagerecordnumber,v.vendor_id,v.name,v.company, '+
         'c.id,c.sagerecordnumber,c.cost_code_id,c.name,c.company '+
@@ -79,8 +76,6 @@ export const getFilterTrasactions = async (req: Request, res: Response) => {
   //const 
     const {short_name,id_house,id_vendor,id_cost_code,date} = req.query;
 
- 
-    
   console.log(short_name);
     try {
       if(short_name == "All")
@@ -92,7 +87,7 @@ export const getFilterTrasactions = async (req: Request, res: Response) => {
         var houseCondition = id_house?{ [Op.or]: {house_id: id_house?.toString()}} : null;
         var vendorCondition = id_vendor?{ [Op.or]: {vendor_id: id_vendor?.toString()}} : null;
         var costCondition = id_cost_code?{ [Op.or]: {cost_code_id: id_cost_code?.toString()}} : null;
-        var dateCondition = date?{ [Op.gte]: {sagedate: date?.toString()}} : null;
+        var dateCondition = date?{[Op.or]: { sagedate :{[Op.gte]:date}}}: null;
 
       const vendor= await Transaction.findAll({
           limit:1000,
@@ -112,11 +107,32 @@ export const getFilterTrasactions = async (req: Request, res: Response) => {
               as:"CostCodes"
           }
       ]});
-      const msg = AppStrings.queried("vendors");
+      const msg = AppStrings.queried("Transactions");
      // console.log(vendor);
       return response(res, OK, msg, vendor, null);
       }
       else{
+         
+        var filtro = '';
+
+        if(id_house != '' && id_house != undefined)
+        {
+           filtro = ' OR  tr.house_id ='+id_house;
+        }
+        if(id_vendor != '' && id_vendor != undefined)
+        {
+            filtro += ' OR tr.vendor_id='+id_vendor;
+        }
+        if(id_cost_code != '' && id_cost_code != undefined)
+        {
+          filtro += ' OR tr.cost_code_id= '+id_cost_code;
+        }
+        if(date != '' && date != undefined)
+        {
+
+          filtro += ' OR  tr.sagedate ='+`'${date}'`;
+        }
+
         const [results, metadata] =  await db.query('SELECT tr.id,tr.rguidb,tr.house_id,tr.vendor_id,tr.cost_code_id,tr.description,tr.amount,tr.sagedate,tr.company, '+
                                                     ' h.id,h.job_id,h.address,h.company,h.sagerecordnumber,v.id,v.sagerecordnumber,v.vendor_id,v.name,v.company, '+
                                                     ' c.id,c.sagerecordnumber,c.cost_code_id,c.name,c.company FROM  eh_tasks. transactions tr '+
@@ -124,12 +140,13 @@ export const getFilterTrasactions = async (req: Request, res: Response) => {
                                                      ' INNER JOIN eh_tasks.house_budgets hb ON hb.house_id  = h.id '+
                                                     ' INNER JOIN eh_tasks.vendors v ON tr.vendor_id = v.id '+
                                                     ' inner JOIN eh_tasks.cost_codes c ON tr.cost_code_id = c.id '+
-                                                    ' WHERE  hb.foreman = :foreman OR  tr.house_id = :house_id OR tr.vendor_id= :vendor_id OR tr.cost_code_id =:cost_code_id OR  tr.sagedate = :date',{
+                                                    ' WHERE  hb.foreman = :foreman '+filtro,{
                               
-                          replacements: { foreman: short_name , house_id: id_house, vendor_id: id_vendor,cost_code_id: id_cost_code,date: date}
+                          replacements: { foreman: short_name }
                           });
+          
 
-                        const msg = AppStrings.queried("vendors");
+                        const msg = AppStrings.queried("Trnsactions");
                         // console.log(vendor);
                         return response(res, OK, msg, results, null);
       }
